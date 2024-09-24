@@ -1,0 +1,306 @@
+---
+title: "方差分析"
+format: html
+editor: visual
+author: Ziyu
+date: 2024/08/22
+theme: Cosmo
+toc: true
+toc_float: true
+code_folding: hide
+bibliography: references.bib
+---
+
+## 前言
+
+方差分析（Analysis of Variance，ANOVA）是一种广泛用于统计学中的假设检验方法，**用于比较多个组或处理之间的均值是否有显著差异**，通常用于分析实验设计或观察研究的数据。
+
+方差中蕴含着全部信息，方差分析就是将总方差拆分为不同的部分进行比较，从而得出处理、交互作用是否存在（即显著）。
+
+ANOVA指的是一类抽样或实验设计，其中预测变量是分类的，响应变量是连续的，但也请始终记住方差分析的目标:对随机抽样的各组之间的均值进行比较。
+
+方差分析也有多种类型，如单因素方差分析、双因素方差分析、重复测量方差分析等，依据实验设计和因子类型而定。
+
+## 分解平方和
+
+## ANOVA的前提
+
+在我们可以在统计模型中使用平方和之前，数据必须满足以下假设：
+
+1.  这些样本是独立且均匀分布的。
+
+2.  各组间的方差是均匀的。虽然样本组的均值可能彼此不同，但我们假设每个组内的方差近似等于所有其他组内的方差。因此，每个处理组对组内平方和的贡献大致相同。在线性回归中，我们做了一个类似的假设，即不同水平的X变量的方差是齐次的。此外，在线性回归中，数据转换通常会使方差相等。
+
+3.  残差满足正态分布。
+
+4.  样本被正确分类。
+
+5.  主效应是可加的。在某些ANOVA设计中，例如随机区组设计或分割地块设计，并不是所有的处理因素都被完全复制。在这些情况下，需要假设主效应是严格可加的，并且不同因素之间没有相互作用。当我们在本章后面讨论这些设计时，我们将更详细地讨论这个假设。数据转换也可以帮助确保可加性，特别是当乘法因素被对数转换时。
+
+## ANOVA的假设检验
+
+方差分析的核心原理是比较组间差异与组内差异。具体来说，它将总方差分解成两个部分：组间方差（Between-Group Variance）和组内方差（Within-Group Variance）。组间方差反映了不同组之间的均值差异，而组内方差反映了同一组内观测值的变异性。通过比较组间方差与组内方差，我们可以确定不同组之间是否存在显著差异。
+
+单因素方差检验的模型为：
+
+$Y_{ij} = \mu + A_{i} + \varepsilon_{ij}$
+
+μ为整体平均值。模型中最重要的元素是Ai。这一项表示与处理A的第i层相关的可加性线性分量。与第i层相关的系数Ai各不相同。如果Ai是正数，则处理水平i的期望大于整体平均值。如果Ai为负，则期望低于整体平均值。因为Ai代表的是离均值的偏差，根据定义，它们的和等于零。方差分析允许我们估计Ai效应(处理平均值减去大平均值是Ai的无偏估计量)，并测试关于Ai的假设。
+
+零模型为没有任何处理效应的情况，此时对于所有处理等级，Ai=0:
+
+$Y_{ij} = \mu + \varepsilon_{ij}$
+
+如果零假设成立，那么在处理组之间发生的任何变化(总是会有一些)反映的只是随机误差。
+
+方差分析表提供了无处理效果的零假设的一般检验。表10.2显示了单因素方差分析表的基本组成部分。
+
+## 方差分析的步骤与计算
+
+## 方差分析的步骤和计算
+
+### 确定假设
+
+在开始ANOVA之前，我们需要设定两个假设：
+
+-   零假设（H0）：所有组的均值相等，即组间不存在显著差异。
+
+-   备择假设（H1）：至少有两组的均值不等，即存在至少一个组间的显著差异。
+
+### 计算组间和组内方差
+
+-   组间方差（Between-Group Variance）：计算每个组的均值与总体均值之间的差异，反映了不同处理或条件下数据的变化程度。
+
+-   组内方差（Within-Group Variance）：计算组内数据点与各自组均值的差异，表示在相同条件下的数据波动。
+
+### 计算F值
+
+F = 组间方差 / 组内方差
+
+较高的F值通常表明组间存在显著差异。但我们需要通过F分布来确定这个差异是否统计上显著。
+
+我们可以通过F分布表或相关软件，根据自由度和显著性水平（通常是0.05）找到F值的临界值。如果计算出的F值超过临界值，我们拒绝零假设，认为至少有两组间存在显著差异。
+
+### 事后检验(posteriori comparisons)
+
+|                             |                                              |                                             |
+|-----------------------------|----------------------------------------------|---------------------------------------------|
+| **多重比较方法**            | **适用场景**                                 | **其它说明**                                |
+| **LSD（最小显著差异）检验** | 使用最为广泛，检验效能高，对比组别较少时使用 | 对差异最为敏感，风险是增加了I型错误的可能性 |
+| **Scheffé检验**             | 当比较组数或自由度较大时时使用，检验效能高   | 非常保守                                    |
+| **Tukey'HSD检验**           | 各组别的样本数量相同时使用                   | 相对较为保守                                |
+| **Bonferroni 校正**         | 对比组别数量较少时使用                       | 非常保守                                    |
+
+### 绘图
+
+**字母标记法**
+
+![](方差分析_image/1.png){width="232"}
+
+**星号标记法**
+
+![](方差分析_image/2.png){width="398"}
+
+## 方差分析与实验设计类型
+
+在生态学中，方差分析常用于实验数据的分析，方差分析是与实验紧密联系的。
+
+方差分析有多种分类方法，根据不同的标准，可以将方差分析分为以下几种类型：
+
+-   按照影响分析指标的因素（自变量）的个数，分为单因素方差分析、双因素方差分析、多因素方差分析等。
+
+-   按照实验设计类型的角度，可以将方差分析分为完全随机化设计、随机区组设计、交叉设计、析因设计、重复测量设计、拉丁方设计、圆分布设计、嵌套设计、裂区设计等等（生物医学上常用）。
+
+-   按照被影响的指标（因变量）的个数，分为一元方差分析、协方差分析和多元方差分析。
+
+### 随机区块
+
+**纳入环境异质性**的一种有效方法是使用随机区组设计。区块是一个圈定的区域或时间段，其中的环境条件相对均匀。在研究区域内，可以随机或系统地放置区块，但它们的排列应使区块内的环境条件比区块之间的环境条件更相似。
+
+每个区块应该足够小，以包含一组相对同质的条件。然而，每个区块也必须足够大，以容纳每个处理的单个重复。此外，区块内必须有足够的空间，以允许复制之间有足够的间隔，以确保它们的独立性。块本身也必须彼此相距足够远，以确保块之间复制的独立性。
+
+在随机区块设计中，每组处理在物理上(或空间上)分组在一个区组中(见图7.6)，每个处理在每个区组中只代表一次。共有a = 1 \~ i个处理组j = 1 \~ b个块，因此总样本量为ba个观察值。测试的模型:
+
+### 嵌套方差分析
+
+嵌套设计是指在每个重复中都有子抽样的设计。这样做的目的是为了提高估计每个重复的响应的精度。由于大数定律，我们使用的子样本越多，我们对每个重复的平均值的估计就越精确。
+
+在嵌套设计中，数据按照层次组织，在处理这样的数据时，方差分析的模型应该为：
+
+### 双因素方差分析
+
+不同于在单因素方差分析中用一个均方来表示处理效果，双因素方差分析中用三个均方来表示处理因素。每个主效应或处理组都有平方和和均方:一个用于(a - 1) = 2自由度的基质，一个用于(b - 1) = 3自由度的捕食。这些平方和用于检验每个因素的均值差异，就像在单因素方差分析中一样。
+
+然而，一个微妙的区别是，在双因素方差分析中，与基质主要影响相关的平方和是通过对所有捕食水平进行平均来计算的。同样，与捕食主效应相关的平方和是通过对所有基质的水平取平均值来计算的。相比之下，单因素方差分析的主要效应只是在每个处理中取重复的平均值，因为在实验设计中不存在第二个因素。
+
+注意还需要处理交互效应，我们先简单地记住交互作用效应具有(a - 1)(b - 1)个自由度。在藤壶的例子中，交互效应有(3 - 1)(4 - 1)= 6个自由度。
+
+模型如下：
+
+### 多因素方差分析
+
+### 裂区方差分析
+
+裂区设计是随机区块设计的扩展，适用于两个试验处理。这个术语来自农业研究，其中一个地块被分成几个子地块，每个子地块接受不同的处理。就我们的目的而言，这样的分裂地块相当于一个块，其中包含不同的处理复制。裂区设计与随机区块设计的区别在于，裂区设计还应用了第二个处理因素，这一次是在整个地块的水平上。
+
+裂区设计类似双因素方差分析，区别在于可以处理环境中微栖息地的变化对结果的影响。
+
+### 重复测量方差分析
+
+重复测量设计是在不同时间收集同一重复的多个观察值。重复测量设计可以被认为是一种裂区设计，其中单个重复作为块，子因素是时间。重复测量设计最初用于医学和心理学研究，在这些研究中，对单个主题进行重复观察。因此，在重复测量术语中，受试者间因子对应于整块图因子，受试者内因子对应于不同的时间。然而，在重复测量设计中，对单个个体的多个观察结果并不是相互独立的，因此分析必须谨慎进行。
+
+### ANCOVA(协方差分析)
+
+ANCOVA(协方差分析)是回归和方差分析的混合，其中为每个重复测量一个额外的连续变量(协变量)。假设协变量也有助于响应变量的变化。如果协变量没有被测量，那么变异源就会与残差中的纯误差集中在一起。在协方差分析中，我们可以统计地从残差中去除变异源。如果协变量有重要的影响，残差的大小就会小得多，我们对处理差异的检验就会更有力。考虑ANCOVA的一个有用方法是，它是对响应变量对协变量回归的残差进行的方差分析。
+
+模型为：
+
+## R实现方差分析
+
+### 数据介绍
+
+在生态学中，方差分析通常与实验相关，因此在复现方差分析时应了解相关的实验。本次的案例数据来自《The shaping role of self-organization: linking vegetation patterning, plant traits and ecosystem functioning》。根据作者提供的代码，进行一次方差分析的完整复现。
+
+植物之间的促进作用具有尺度依赖性，可能会存在近距离的抑制，长距离的促进作用。作者为了探究互花米草是否存在尺度依赖反馈，进行了移植试验，想要比较斑块中心、边缘和外围的移植在生长情况上是否存在差异。
+
+作者设计的实验如下：
+
+对于每一对植被斑块，我们在斑块间的间隙和两个斑块的中心 (代表三种处理) 沿一条直线移植了海三棱藨草 (Scirpus mariqueter) 幼苗。移植样方 (50 × 50 × 20 cm3) 取自附近均匀分布的植被带，移植实验在 2017 年 5 月和 2018 年 6 月分别展开。移植样方的四角用 PVC 管标记位置。在 2018 年的实验中，植物样方被移植到斑块中心 (0m)，斑块附近 (1m) 和远离斑块 (5m) 的位置，并且增加控制组用以排除种内竞争对植物生长的影响，每种处理进行 6 次重复。
+
+先加载所需的包：
+
+```{r}
+library(car)      # Anova, levene.test, outlier.test
+#library(NCStats)  # fit.plot
+library(nortest)  # ad.test, cvm.test
+library(reshape)
+library(sciplot)
+library(RColorBrewer)
+require(gplots)   # Package with special plot functions
+require(nlme)     # Package for Non-Linear mixed-effects models
+library(stats)
+library(fdrtool)
+library(ARTool)
+library(lsmeans)
+library(multcomp)
+library(pgirmess)
+library(coin)
+library(BBmisc)
+library(tidyverse)
+```
+
+加载数据。
+
+```{r}
+PlotData=read.csv(file='Rawdata_density20180616.csv',header = T)
+head(PlotData)
+```
+
+数据主要关注调查时间、处理类型和密度。
+
+进行数据预处理。
+
+```{r}
+initial <- PlotData[PlotData$week==1,]   
+FirstMonth <- PlotData[PlotData$week==4,]   #FIRST MONTH
+Fifthweek <- PlotData[PlotData$week==5,]    #Fifth week
+Lastweek <- PlotData[PlotData$week==8,]    #Fifth week
+FirstWeek <- PlotData[PlotData$week==2,]    # First week
+
+FirstMonth$Rates <- (FirstMonth$density-initial$density)/initial$density/3
+FirstMonth$Type <- factor(FirstMonth$type, 
+                          levels = unique(FirstMonth$type)[c(1, 4, 2, 3)], 
+                          labels = c("A", "Control", "B", "C"))
+```
+
+### 条件检验
+
+进行方差分析前，首先检验数据是否满足正态性及方差齐性。
+
+```{r}
+m3.1<-lm(Rates~Type, data=FirstMonth)
+# 检验残差的正态性
+print(shapiro.test(resid(m3.1)))
+qqPlot(m3.1, main="Q-Q Plot of Residuals")
+# 检验方差齐性
+print(leveneTest(m3.1))
+```
+
+可见是不满足的，需要对数据进行变换。
+
+```{r}
+# 构造函数
+stderr <- function(x) sqrt(var(x,na.rm=T)/length(which(!is.na(x)))) 
+
+FirstMonth$trans <- normalize(FirstMonth$Rates, method = "range", range = c(0, 1))
+FirstMonth$tr <- sqrt(FirstMonth$trans)
+m3.2<-lm(tr~Type, data=FirstMonth)
+
+print(shapiro.test(resid(m3.2)))
+
+qqPlot(m3.2, main="Q-Q Plot of Residuals")
+print(leveneTest(m3.2))
+lsmeans(m3.2, pairwise~Type)
+```
+
+对变换后的数据再次进行检验，结果满足方差分析的前提。
+
+### 方差分析
+
+完成方差分析后，进行Tukey HSD 检验
+
+```{r}
+M2 <- aov(tr~Type,FirstMonth)
+print(summary(M2))      
+print(leveneTest(M2))  
+print(TukeyHSD(M2))
+```
+
+### 绘图
+
+```{r}
+# Colors=c("gray99","gray99","gray90","gray70")
+# Colors = rainbow(4)
+Colors = brewer.pal(4, "Set1") #Accent,Dark2,Paired,Pastel1,Pastel1,Set1,Set2,Set3
+Values <- FirstMonth$Rates
+Categories <- as.factor(FirstMonth$Type)
+data <- data.frame(Values, Categories)
+
+# 计算每个类别的均值和标准误
+summary_data <- data %>%
+  group_by(Categories) %>%
+  summarise(
+    mean_value = mean(Values, na.rm = TRUE),
+    stderr_value = sqrt(var(Values, na.rm = TRUE) / sum(!is.na(Values)))
+  )
+```
+
+```{r}
+# 绘制条形图，添加误差线
+p <- ggplot(summary_data, aes(x = Categories, y = mean_value, fill = Colors)) +
+  geom_bar(stat = "identity", color = "black", width = 0.6) +  # 绘制条形图
+  geom_errorbar(aes(ymin = mean_value - stderr_value, ymax = mean_value + stderr_value), 
+                width = 0.2, linewidth = 0.6) +  # 添加误差线
+  scale_fill_identity() +  # 使用指定的颜色
+  ylim(-20, 80) +  # 设置 y 轴范围
+  labs(y = "density change (%/week)", title = "First three weeks") +  # 添加标签
+  theme_minimal() +  # 使用简洁主题
+  theme(plot.title = element_text(hjust = 0.05, size = 17))  # 调整标题位置和样式
+
+# 添加水平线
+p <- p + geom_hline(yintercept = 0, size = 1, color = "black")
+
+# 添加文本标签
+text_labels <- c("a", "a", "b", "a")
+p <- p + geom_text(aes(label = text_labels, y = mean_value + stderr_value * 1.1),
+                   size = 5, fontface = "italic")
+
+# 添加矩形框
+p <- p + annotate("rect", xmin = 0.5, xmax = 2.5, ymin = -5, ymax = 65, 
+                  color = "black", fill = NA, linetype = "dashed", size = 0.6)
+
+# 打印图形
+print(p)
+```
+
+![](方差分析_image/3.png)

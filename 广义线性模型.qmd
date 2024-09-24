@@ -1,0 +1,42 @@
+---
+title: "广义线性模型"
+format: html
+editor: visual
+author: Ziyu
+date: 2024/08/15
+theme: Cosmo
+toc: true
+toc_float: true
+code_folding: hide
+---
+
+## 前言
+
+**广义线性模型 (GLM)** 是传统线性回归模型的关键扩展，旨在处理更广泛的数据类型和分布。与假设连续因变量遵循正态分布的前身不同，GLM 的核心在于能够通过合适的链接函数将响应变量的预期值链接到线性预测变量，从而适应二进制、计数、连续和其他数据类型
+
+## 广义线性模型介绍
+
+一个广义线性模型有如下三个部分：
+
+-   随机部分，给出因变量$Y$及其条件概率分布；
+
+-   系统部分，给出模型自变量的线性函数；
+
+-   连接函数， 将因变量分布参数（一般是均值）与自变量线性组合联系在一起。
+
+在广义线性模型中， 因变量的分布不一定是正态分布， 因变量的期望值不一定是自变量的线性函数， 因变量的方差不一定是恒定值。
+
+典型的因变量分布有二项分布、泊松分布等。
+
+```{r}
+1 + 1
+```
+
+You can add options to executable code like this
+
+```{r}
+#| echo: false
+2 * 2
+```
+
+The `echo: false` option disables the printing of code (only output is displayed).

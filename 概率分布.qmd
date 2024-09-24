@@ -1,0 +1,312 @@
+---
+title: "概率分布"
+format: html
+editor: visual
+author: Ziyu
+date: 2024/08/21
+theme: Cosmo
+toc: true
+toc_float: true
+code_folding: hide
+bibliography: references.bib
+---
+
+## 前言
+
+概率分布是大多数初学者接触统计学的第一步。依照传统的教学流程，初学者会先了解概率分布的两大类型：离散的和连续的。但本文旨在从一个有一定统计基础的学习者的角度来回顾概率分布。有许多统计假设都是基于数据符合正态分布的，这使得正态分布成为当之无愧的焦点。
+
+但除了正态分布外的分布有什么特征呢？在传统统计分析中，研究者通常要将在理论上不符合正态分布的数据进行转化，已达到使用要求。随着统计学的发展，如广义线性模型的开发等，越来越多的分析方法能够适应特定的数据类型。因此，了解常见的数据类型是进行相关生态数据分析的基础和前提。在拟合数据时，需要精确地选择数据的分布类型，因此，熟悉各分布的图像也十分重要。
+
+## 离散随机变量
+
+离散随机变量具有可数的多个可能值；例如，一个地区某物种的数量。对于离散随机变量，可以使用概率质量函数（probability mass function, pmf）为每个可能的值计算相关的概率。
+
+### 二元分布
+
+二元分布又名伯努利分布，指试验的结果只有两种可能的变量，如抛一次硬币或者某个物种是否在某地出现。
+
+$P(Y = y) = p^y(1-p)^{1-y} \quad \textrm{for} \quad y = 0, 1.$
+
+$\operatorname{E}(Y) = p$
+
+$\operatorname{SD}(Y) = \sqrt{p(1-p)}$
+
+### 二项分布
+
+在科学试验中很少只做一次伯努利实验，通常会进行多次的伯努利实验。例如，我们不会只调查物种A是否在某一个地区出现，而是更关心其是否在多个研究区出现。**统计学中将进行多次伯努利实验成功的结果定义为二项随机变量。**
+
+$P(Y=y) = \binom{n}{y} p^y (1-p)^{n-y} \quad \textrm{for} \quad y = 0, 1, \ldots, n.$
+
+$\operatorname{E}(Y) = np$
+
+$\operatorname{SD}(Y) = \sqrt{np(1-p)}$
+
+由下图可见，随着$p$增加，二项分布的pmf的中心会向右转移。而随着$n$增加，pmf的偏度会减小。
+
+```{r}
+library(tidyverse)
+# 设置参数
+params <- data.frame(n = c(10, 20, 10, 50), 
+                     p = c(0.25, 0.2, 0.5, 0.2))
+
+data <- data.frame()
+
+for (i in 1:nrow(params)) {
+  n <- params$n[i]
+  p <- params$p[i]
+  successes <- 0:n
+  probabilities <- dbinom(successes, size = n, prob = p)
+  temp_data <- data.frame(successes = successes, 
+                          probability = probabilities, 
+                          n = n,
+                          p = p)
+  data <- rbind(data, temp_data)
+}
+
+data <- data %>% 
+  mutate(label = paste("n =", n, "p =", p))
+
+ggplot(data, aes(x = successes, y = probability)) +
+  geom_bar(stat = "identity", fill = "black", color = "black",alpha=0.6) +
+  facet_wrap(~ label, scales = "free_y", labeller = label_both) +
+  labs(x = "number of successes", y = "probability",
+       title = "Binomial Distribution for different n and p values") +
+  scale_x_continuous(limits = c(0, 25)) +
+  theme_minimal()
+```
+
+### 几何分布
+
+假设我们执行独立的伯努利实验直到成功，我们将$Y$作为失败的次数，则几何分布的pmf为：
+
+$P(Y=y) = (1-p)^yp \quad \textrm{for}\quad y = 0, 1, \ldots, \infty.$
+
+$\operatorname{E}(Y) = \frac{1-p}p$
+
+$\operatorname{SD}(Y) = \sqrt{\frac{1-p}{p^2}}$
+
+```{r}
+library(tidyverse)
+# 设置参数
+p_values <- c(0.3, 0.5, 0.7)
+max_failures <- 15
+
+# 生成数据
+data <- data.frame()
+
+for (p in p_values) {
+  failures <- 0:max_failures
+  probabilities <- dgeom(failures, prob = p)
+  temp_data <- data.frame(failures = failures, 
+                          probability = probabilities, 
+                          p_value = as.factor(p))
+  data <- rbind(data, temp_data)
+}
+# 绘制图表
+ggplot(data, aes(x = failures, y = probability)) +
+  geom_bar(stat = "identity", fill = "black") +
+  facet_wrap(~ p_value, ncol = 1, labeller = label_both) +
+  labs(x = "number of failures", y = "probability",
+       title = "Geometric Distribution for different p values") +
+  theme_minimal()
+```
+
+### 负二项分布
+
+执行多次伯努利实验直到第r次成功，在第r次成功前失败的次数$Y$，即为负二项分布：
+
+$P(Y=y) = \binom{y + r - 1}{r-1} (1-p)^{y}(p)^r \quad \textrm{for}\quad y = 0, 1, \ldots, \infty.$
+
+$\operatorname{E}(Y) = \frac{r(1-p)}{p}$
+
+$\begin{align*}
+ P(Y=y) &= \binom{y}{0} (1-p)^yp \\
+        &= (1-p)^yp \quad \textrm{for} \quad y = 0, 1, \ldots, \infty,
+\end{align*}$
+
+### 超几何分布
+
+在所有先前的随机变量中，我们考虑了一个伯努利过程，其中成功的概率在所有试验中保持恒定。如果这个概率是动态变化的会怎么样呢？超几何随机变量帮助我们解决了这些情况中的一些。具体来说，如果我们想从一个包含N个对象的集合中，不重复地选择n个项目，其中m个被视为成功，会怎么样？在这种情况下，选择“成功”的概率取决于之前的选择。如果我们模拟Y，即在n次选择后的成功率，Y服从一个超几何分布，其中：
+
+$\begin{equation}
+P(Y=y) = \frac{\binom{m}{y} \binom{N-m}{n-y}}{\binom{N}{n}} \quad \textrm{for} \quad y = 0, 1, \ldots, \min(m,n).
+\end{equation}$
+
+$p=m/n$
+
+$\operatorname{E}(Y) = np$
+
+$\operatorname{SD}(Y) = \sqrt{np(1-p)\frac{N-n}{N-1}}$
+
+### 泊松分布
+
+上文提到的二项随机变量通常固定试验次数（n）且单次试验成功的概率*p*不是太低。**如果试验次数很大且单次试验成功的概率很低时，可以使用泊松随机变量。**泊松随机变量可以表示，某个稀有种在某个地区或某次调查中出现的总数：
+
+$P(Y=y) = \frac{e^{-\lambda}\lambda^y}{y!} \quad \textrm{for} \quad y = 0, 1, \ldots, \infty,$
+
+$\operatorname{E}(Y) = \lambda$
+
+$\operatorname{SD}(Y) = \sqrt{\lambda}$
+
+其中λ为根据先前的经验或数据已知的在该空间或时间内某事件发生的**平均次数**。泊松分布的特征由λ决定，当λ很小时，获得较大值的概率很小；随着λ的增大，泊松分布也会变得逐渐对称。
+
+```{r}
+library(ggplot2)
+
+# 示例数据框
+data <- data.frame(
+  events = c(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10),
+  probability = c(0.606, 0.303, 0.07575, 0.012625, 0.0015781, 0.00015781, 1.31e-05, 9.36e-07, 5.85e-08, 3.25e-09, 1.63e-10),
+  label = rep("Poisson lambda = 0.5", 11)
+)
+
+# 添加其他 lambda 值的数据到 data 中
+data <- rbind(data,
+              data.frame(
+                events = c(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10),
+                probability = dpois(0:10, lambda = 1),
+                label = rep("Poisson lambda = 1", 11)
+              ),
+              data.frame(
+                events = c(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10),
+                probability = dpois(0:10, lambda = 5),
+                label = rep("Poisson lambda = 5", 11)
+              )
+)
+
+ggplot(data, aes(x = events, y = probability)) +
+  geom_bar(stat = "identity", fill = "grey", color = "black") +
+  facet_wrap(~ label, scales = "free_y", labeller = label_both) +
+  labs(x = "number of events", y = "probability",
+       title = "Poisson Distribution for different lambda values") +
+  scale_x_continuous(limits = c(0, 10)) +
+  theme_minimal()
+```
+
+## 连续随机变量
+
+连续随机变量可以取无限多的数值，且这些数值是不可数的。对于连续随机变量，我们使用概率密度函数（probability density functions, pdfs）来定义概率。概率是通过计算感兴趣区间内密度曲线下的面积来得出的。所以，给定一个概率密度函数$f(y)$，我们可以计算：
+
+$\begin{align*}
+P(a \le Y \le b) = \int_a^b f(y)dy.
+\end{align*}$
+
+### 指数分布
+
+假设我们执行一个参数为λ的泊松过程，我们建模直到第一次事件发生的等待时间$Y$，其可以用指数分布表示：
+
+$\begin{equation}
+f(y) = \lambda e^{-\lambda y} \quad \textrm{for} \quad y > 0,
+\end{equation}$
+
+$\operatorname{E}(Y) = 1/\lambda$
+
+$\operatorname{SD}(Y) = 1/\lambda$
+
+### Gamma分布
+
+再次考虑一个泊松过程。在讨论指数随机变量时，我们模拟了一个事件发生之前的等待时间。如果 Y 表示在泊松过程中以速率 λ 发生 r 个事件之前的等待时间，那么 Y 服从参数为 r 和 λ 的伽马分布，其中：
+
+$\begin{equation}
+f(y) = \frac{\lambda^r}{\Gamma(r)} y^{r-1} e^{-\lambda y}\quad \textrm{for} \quad y >0.
+\end{equation}$
+
+$\operatorname{E}(Y) = r/\lambda$
+
+$\operatorname{SD}(Y) = \sqrt{r/\lambda^2}$
+
+### 正态分布
+
+$\begin{equation}
+f(y) =  \frac{e^{-(y-\mu)^2/ (2 \sigma^2)}}{\sqrt{2\pi\sigma^2}} \quad \textrm{for} \quad -\infty < y < \infty.
+\tag{3.10}
+\end{equation}$
+
+$\operatorname{E}(Y) = \mu$
+
+$\operatorname{SD}(Y) = \sigma$
+
+```{r}
+library(ggplot2)
+library(dplyr)
+
+# Generate data
+set.seed(123)
+data <- data.frame(
+  values = c(rnorm(1000, mean = 10, sd = 5),
+             rnorm(1000, mean = 0, sd = 3),
+             rnorm(1000, mean = 0, sd = 1),
+             rnorm(1000, mean = -5, sd = 2)),
+  Distribution = factor(rep(c("N(10, 5)", "N(0, 3)", "N(0, 1)", "N(-5, 2)"), each = 1000))
+)
+
+# Plotting the data
+ggplot(data, aes(x = values, color = Distribution)) +
+  geom_density(size = 1) +
+  labs(title = "Normal Distributions", x = "values", y = "density") +
+  theme_minimal() +
+  theme(plot.title = element_text(size = 20, face = "bold"),
+        legend.title = element_text(size = 12, face = "bold"),
+        legend.text = element_text(size = 10))
+```
+
+### Beta分布
+
+到目前为止，我们所有的连续变量都没有上限。如果我们想要将可能的值限制在较小的区间内，我们可能会选择使用beta随机变量。实际上，我们经常使用beta随机变量来模拟概率的分布——下界为0，上界为1。pdf由两个参数α和β确定（α, β \> 0）。我们可以通过以下pdf描述一个贝塔随机变量：
+
+$\begin{equation}
+f(y) = \frac{\Gamma(\alpha + \beta)}{\Gamma(\alpha)\Gamma(\beta)} y^{\alpha-1} (1-y)^{\beta-1} \quad \textrm{for} \quad 0 < y < 1.
+\tag{3.11}
+\end{equation}$
+
+$\operatorname{E}(Y) = \alpha/(\alpha + \beta)$
+
+$\operatorname{SD}(Y) = \displaystyle \sqrt{\frac{\alpha \beta}{(\alpha + \beta)^2 (\alpha+\beta+1)}}$
+
+## 用于检验的分布
+
+我们在本章的大部分内容中讨论了在建模时可能有用的概率分布。以下这些分布虽然在建模中很少使用，但在假设检验中却很有用，因为某些常用的检验统计量遵循这些分布。
+
+### χ²检验
+
+你可能已经遇到过χ²检验。例如，χ²检验用于二维列联表中，来研究行变量和列变量之间的关联。χ²检验也用于拟合优度检验，例如将根据孟德尔比例预期的计数与观察数据进行比较。在这些情况下，χ²检验通过将观察到的计数与在零假设下的预期值进行比较，当观察到的差异过大时，拒绝零假设。
+
+我们可以进行似然比检验（LRT）来比较嵌套模型。当较大的模型相对于简化模型没有显著改进时，LRT统计量（即对数似然差的两倍）遵循χ²分布，其自由度等于参数数量的差异。
+
+一般来说，自由度为k的χ²分布是右偏的，其均值为k，标准差为$\sqrt{2k}$。下图展示了不同k值的卡方分布。
+
+χ²分布是伽马分布的特例。具体来说，自由度为k的χ²分布可以表示为参数λ=1/2和r=k/2的伽马分布。
+
+```{r}
+# Create a data frame with values for the Chi-squared distributions
+df <- data.frame(
+  values = seq(0, 15, length.out = 300)
+)
+
+# Add columns for density values with different degrees of freedom
+df$density1 <- dchisq(df$values, df = 1)
+df$density3 <- dchisq(df$values, df = 3)
+df$density7 <- dchisq(df$values, df = 7)
+
+# Melt the data frame for easier plotting with ggplot2
+df_melt <- reshape2::melt(df, id.vars = "values", variable.name = "Degree", value.name = "density")
+
+# Map the degree labels
+df_melt$Degree <- factor(df_melt$Degree, levels = c("density1", "density3", "density7"),
+                         labels = c("1", "3", "7"))
+
+# Create the plot
+ggplot(df_melt, aes(x = values, y = density, color = Degree)) +
+  geom_line(size = 1) +
+  labs(title = "Chi-squared Distributions", x = "values", y = "density") +
+  theme_minimal() +
+  scale_color_manual(values = c("blue", "green", "red")) +
+  scale_linetype_manual(values = c("dashed", "dotted", "solid")) +
+  theme(plot.title = element_text(hjust = 0.5))
+```
+
+## References
+
+Roback, Paul, and Julie Legler. 2021. *Beyond Multiple Linear Regression - Applied Generalized Linear Models and Multilevel Models in r*. Chapman; Hall/CRC. <https://bookdown.org/roback/bookdown-BeyondMLR/>.
+
+Gotelli, Nicholas J. and Aaron M. Ellison. 2004. A Primer of Ecological Statistics.
