@@ -1,7 +1,14 @@
-# R中万物为向量
-# R可以进行快速的向量运算
-x1 <- c(1,2,3)
-print(x1)
+# 定义x的范围
+x <- seq(-2 * pi, 2 * pi, length.out = 100)
 
-x2 <- list(1, 2, "hot")
-print(x2)
+# 计算y = cos(x)
+y <- cos(x)
+
+# 绘制图像
+plot(x, y, type = "l", col = "blue", lwd = 2, 
+     xlab = "x", ylab = "y", 
+     main = "y = cos(x)")
+
+# 添加网格线以便更好地观察
+grid()
+exp(-1/10)
