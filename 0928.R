@@ -12,3 +12,5 @@ plot(x, y, type = "l", col = "blue", lwd = 2,
 # 添加网格线以便更好地观察
 grid()
 exp(-1/10)
+
+exp(1/5)
