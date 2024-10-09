@@ -14,3 +14,4 @@ grid()
 exp(-1/10)
 
 exp(1/5)
+getwd()
